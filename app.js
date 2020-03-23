@@ -3,6 +3,7 @@
 // Load node modules to create server
 var express = require('express');
 var bodyParser = require('body-parser');
+var articleRoutes = require('./routes/articles');
 
 // Execute express (http)
 var app = express();
@@ -15,16 +16,8 @@ app.use(bodyParser.json());
 
 // CORS
 
-// Add routes prefix
-
-// Test route
-app.get('/test', (request, response) => {
-  return response.status(200).send({
-    framework: 'NodeJS',
-    user: 'Raul Almanza',
-    web: 'www.github.com'
-  });
-});
+// Add routes prefix / load routes
+app.use('/api', articleRoutes);
 
 // Export actual module
 module.exports = app;
