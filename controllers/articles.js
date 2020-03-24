@@ -179,7 +179,7 @@ var controller = {
       return response.status(404).send({
         status: 'error',
         message: 'File has not been received.'
-      })
+      });
     }
 
     // Get name and image file type
@@ -196,7 +196,7 @@ var controller = {
         return response.status(500).send({
           status: 'error',
           message: 'Invalid file extension.'
-        })
+        });
       });
     } else {
       // Find article and update image url
@@ -206,15 +206,31 @@ var controller = {
           return response.status(404).send({
             status: 'error',
             message: 'Error updating article.'
-          })
+          });
         }
 
         return response.status(200).send({
           status: 'success',
           articleUpdated
-        })
+        });
       });
     }
+  },
+
+  getImage: (request, response) => {
+    var fileName = request.params.name;
+    var filePath = './upload/articles/' + fileName;
+
+    fs.exists(filePath, (exists) => {
+      if (exists) {
+        return response.sendFile(path.resolve(filePath));
+      } else {
+        return response.status(404).send({
+          status: 'error',
+          message: 'File does not exists.'
+        });
+      }
+    })
   }
 };
 
