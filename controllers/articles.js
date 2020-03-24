@@ -86,6 +86,62 @@ var controller = {
         articles
       });
     })
+  },
+
+  getArticle: (request, response) => {
+    var articleId = request.params.id;
+
+
+    Article.findById(articleId, (err, article) => {
+      if(err) {
+        return response.status(500).send({
+          status: 'error',
+          message: 'There was a problem finding article.'
+        });
+      }
+
+      return response.status(200).send({
+        status: 'success',
+        article
+      });
+    })
+  },
+
+  updateArticle: (request, response) => {
+    var articleId = request.params.id;
+
+    var params = request.body;
+
+    try {
+      var validate_title = !validator.isEmpty(params.title);
+      var validate_content = !validator.isEmpty(params.content);
+    } catch (error) {
+      return response.status(200).send({
+        status: 'error',
+        message: 'Data is missing.'
+      });
+    }
+
+    if (validate_title && validate_content) {
+      Article.findByIdAndUpdate({_id: articleId}, params, {new: true}, (error, articleUpdated) => {
+        if (error) {
+          return response.status(500).send({
+            status: 'error',
+            message: 'Error updating article.'
+          });
+        }
+
+        return response.status(200).send({
+          status: 'success',
+          articleUpdated
+        });
+      });
+    } else {
+      return response.status(200).send({
+        status: 'error',
+        message: 'Invalid data.'
+      });
+    }
   }
 };
 
