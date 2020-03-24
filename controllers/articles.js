@@ -231,6 +231,36 @@ var controller = {
         });
       }
     })
+  },
+
+  search: (request, response) => {
+    var searchString = request.params.search;
+
+    Article.find({ "$or": [
+      { "title": { "$regex": searchString, "$options": "i" } },
+      { "content": { "$regex": searchString, "$options": "i" } }
+    ]})
+    .sort([['date', 'descending']])
+    .exec((error, articles) => {
+      if(error) {
+        return response.status(500).send({
+          status: 'error',
+          message: 'Request error.'
+        });
+      }
+
+      if(!articles  || articles.length <= 0) {
+        return response.status(500).send({
+          status: 'error',
+          message: 'No articles matches.'
+        });
+      }
+
+      return response.status(200).send({
+        status: 'success',
+        articles
+      });
+    });
   }
 };
 
