@@ -2,6 +2,9 @@
 var validator = require('validator');
 var Article = require('../models/article');
 
+var fs = require('fs');
+var path = require('path');
+
 var controller = {
 
   dataCourse: (request, response) => {
@@ -140,6 +143,76 @@ var controller = {
       return response.status(200).send({
         status: 'error',
         message: 'Invalid data.'
+      });
+    }
+  },
+
+  deleteArticle: (request, response) => {
+    var articleId = request.params.id;
+
+    Article.findByIdAndDelete({_id: articleId}, (error, articleRemoved) => {
+      if (error) {
+        return response.status(500).send({
+          status: 'error',
+          message: 'Error removing article.'
+        });
+      }
+
+      if (!articleRemoved) {
+        return response.status(404).send({
+          status: 'error',
+          message: 'Article does not exist.'
+        });
+      }
+
+      return response.status(200).send({
+        status: 'success',
+        message: 'Article removed.'
+      });
+    });
+  },
+
+  uploadImage: (request, response) => {
+
+    // Verify files
+    if (!request.files) {
+      return response.status(404).send({
+        status: 'error',
+        message: 'File has not been received.'
+      })
+    }
+
+    // Get name and image file type
+    var filePath = request.files.file0.path;
+    var fileNameSplit = filePath.split('/');
+    var fileName = fileNameSplit[2];
+    var extSplit = fileName.split('.');
+    var ext = extSplit[1];
+
+    // Verify valid image type
+    if (ext != 'png' && ext != 'jpg' && ext != 'jpeg' && ext != 'gif') {
+      // Remove uploaded file
+      fs.unlink(filePath, (error) => {
+        return response.status(500).send({
+          status: 'error',
+          message: 'Invalid file extension.'
+        })
+      });
+    } else {
+      // Find article and update image url
+      var articleId = request.params.id
+      Article.findOneAndUpdate({_id: articleId}, {image: fileName}, {new: true}, (error, articleUpdated) => {
+        if (error) {
+          return response.status(404).send({
+            status: 'error',
+            message: 'Error updating article.'
+          })
+        }
+
+        return response.status(200).send({
+          status: 'success',
+          articleUpdated
+        })
       });
     }
   }
